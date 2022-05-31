@@ -196,7 +196,7 @@ class AlienInvasion:
             #         将ships_left减1
             self.stats.ships_left -= 1
             self.sb.prep_ships()
-
+123
             #         清空余下的外星人和子弹
             self.aliens.empty()
             self.bullets.empty()
