@@ -61,8 +61,8 @@ class AlienInvasion:
             self._check_events()
             if self.stats.game_active:
                 self.ship.update()
-                self._update_bullets()
-                self._update_aliens()
+                # self._update_bullets()
+                # self._update_aliens()
             self._update_screen()
 
     def _check_events(self):
@@ -81,12 +81,16 @@ class AlienInvasion:
 
     def _check_keydown_events(self, event):
         """响应按键."""
-        if event.key == pygame.K_RIGHT:
+        if event.key == pygame.K_UP:
             # 向右移动飞船
             # self.ship.rect.x += 1
             self.ship.moving_right = True
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
+        elif event.key == pygame.K_UP:
+            self.ship.moving_up = True
+        elif event.key == pygame.K_DOWN:
+            self.ship.moving_down = True
         #     按Q退出
         elif event.key == pygame.K_q:
             sys.exit()
@@ -99,6 +103,10 @@ class AlienInvasion:
             self.ship.moving_right = False
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = False
+        elif event.key == pygame.K_UP:
+            self.ship.moving_up = False
+        elif event.key == pygame.K_DOWN:
+            self.ship.moving_down = False
 
     def _fire_bullet(self):
         """创建一颗子弹,并将其加入编组bullets中.限制子弹数量"""
@@ -196,7 +204,7 @@ class AlienInvasion:
             #         将ships_left减1
             self.stats.ships_left -= 1
             self.sb.prep_ships()
-123
+
             #         清空余下的外星人和子弹
             self.aliens.empty()
             self.bullets.empty()
