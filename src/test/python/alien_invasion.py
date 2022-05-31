@@ -47,7 +47,7 @@ class AlienInvasion:
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
 
-        # self._create_fleet()
+        self._create_fleet()
 
         # 创建Play按钮
         self.play_button = Button(self, "Play")
@@ -81,7 +81,7 @@ class AlienInvasion:
 
     def _check_keydown_events(self, event):
         """响应按键."""
-        if event.key == pygame.K_UP:
+        if event.key == pygame.K_RIGHT:
             # 向右移动飞船
             # self.ship.rect.x += 1
             self.ship.moving_right = True
@@ -120,7 +120,7 @@ class AlienInvasion:
         self.bullets.update()
         #       删除消失的子弹.
         for bullet in self.bullets.copy():
-            if bullet.rect.bottom <= 0:
+            if bullet.rect.bottom <= 0 or bullet.rect.right >= self.settings.screen_width:
                 self.bullets.remove(bullet)
 
         self._check_bullet_alien_collisions()
@@ -138,7 +138,7 @@ class AlienInvasion:
         if not self.aliens:
             # 删除现有的子弹并新建一群外星人
             self.bullets.empty()
-            # self._create_fleet()
+            self._create_fleet()
             self.settings.increase_speed()
 
             # 提高等级
@@ -150,27 +150,42 @@ class AlienInvasion:
         #     创建一个外星人
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
-        available_space_x = self.settings.screen_width - (2 * alien_width)
-        number_aliens_x = available_space_x // (2 * alien_width)
+        # # 计算一行容纳
+        # available_space_x = self.settings.screen_width - (2 * alien_width)
+        # number_aliens_x = available_space_x // (2 * alien_width)
+        #
+        # # 计算屏幕可容纳多少行外星人.
+        # ship_height = self.ship.rect.height
+        # available_space_y = (self.settings.screen_height - (3 * alien_height) - ship_height)
+        # number_rows = available_space_y // (2 * alien_height)
 
-        # 计算屏幕克容纳多少行外星人.
-        ship_height = self.ship.rect.height
-        available_space_y = (self.settings.screen_height - (3 * alien_height) - ship_height)
-        number_rows = available_space_y // (2 * alien_height)
+        # # 创建外星人群
+        # for row_number in range(number_rows):
+        #     # 创建第一行外星人.
+        #     for alien_number in range(number_aliens_x):
+        #         self._create_alien(alien_number, row_number)
+
+        # 计算一列容纳
+        available_space_y = self.settings.screen_height - (2 * alien_height)
+        number_aliens_y = available_space_y // (2 * alien_height)
+        # 计算屏幕可容纳多少列外星人
+        ship_width = self.ship.rect.width
+        available_space_x = (self.settings.screen_width - (3 * alien_width) - ship_width)
+        number_lines = available_space_x // (2 * alien_width)
 
         # 创建外星人群
-        for row_number in range(number_rows):
-            # 创建第一行外星人.
-            for alien_number in range(number_aliens_x):
+        for row_number in range(number_lines):
+            # 创建第一列外星人.
+            for alien_number in range(number_aliens_y):
                 self._create_alien(alien_number, row_number)
 
     def _create_alien(self, alien_number, row_number):
         """创建一个外星人并将其放在当前行"""
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
-        alien.x = alien_width + 2 * alien_width * alien_number
-        alien.rect.x = alien.x
-        alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
+        alien.y = alien_height + (2 * alien_height * alien_number)
+        alien.rect.y = alien.y
+        alien.rect.x = self.settings.screen_width - alien.rect.height - 2 * alien.rect.height * row_number
         self.aliens.add(alien)
 
     def _update_aliens(self):
@@ -179,8 +194,8 @@ class AlienInvasion:
         self.aliens.update()
 
         #     检测外星人和飞船之间的碰撞
-        if pygame.sprite.spritecollideany(self.ship, self.aliens):
-            self._ship_hit()
+        # if pygame.sprite.spritecollideany(self.ship, self.aliens):
+        #     self._ship_hit()
 
         #     检查是否有外星人到达屏幕底端
         self._check_aliens_bottom()
@@ -193,9 +208,9 @@ class AlienInvasion:
                 break
 
     def _change_fleet_direction(self):
-        """将正群外星人下移,并改变它们的方向"""
+        """将正群外星人左移,并改变它们的方向"""
         for alien in self.aliens.sprites():
-            alien.rect.y += self.settings.fleet_drop_speed
+            alien.rect.x -= self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
 
     def _ship_hit(self):
@@ -210,7 +225,7 @@ class AlienInvasion:
             self.bullets.empty()
 
             #         创建一群新的外星人,并将飞船放到屏幕底端的中央
-            # self._create_fleet()
+            self._create_fleet()
             self.ship.center_ship()
 
             #         暂停
@@ -220,10 +235,10 @@ class AlienInvasion:
             pygame.mouse.set_visible(True)
 
     def _check_aliens_bottom(self):
-        """检查是否有外星人到达了屏幕底端"""
+        """检查是否有外星人到达了屏幕左端"""
         screen_rect = self.screen.get_rect()
         for alien in self.aliens.sprites():
-            if alien.rect.bottom >= screen_rect.bottom:
+            if alien.rect.left <= screen_rect.left:
                 # 像飞船被撞到一样进行处理
                 self._ship_hit()
                 break
@@ -246,7 +261,7 @@ class AlienInvasion:
             self.bullets.empty()
 
             #             创建一群新的外星人,并让飞船居中
-            # self._create_fleet()
+            self._create_fleet()
             self.ship.center_ship()
 
             #             隐藏鼠标光标

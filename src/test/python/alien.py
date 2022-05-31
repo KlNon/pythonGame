@@ -27,16 +27,16 @@ class Alien(Sprite):
         self.rect.x = self.rect.width
         self.rect.y = self.rect.height
 
-        # 储存外星人的精确水平位置
-        self.x = float(self.rect.x)
+        # 储存外星人的精确竖直位置
+        self.y = float(self.rect.y)
 
     def check_edges(self):
         """如果外星人位于屏幕边缘,就返回True"""
         screen_rect = self.screen.get_rect()
-        if self.rect.right >= screen_rect.right or self.rect.left <= 0:
+        if self.rect.top <= 0 or self.rect.bottom >= screen_rect.bottom:
             return True
 
     def update(self):
-        """向左或向右移动外星人"""
-        self.x += (self.settings.alien_speed * self.settings.fleet_direction)
-        self.rect.x = self.x
+        """向下或向上移动外星人"""
+        self.y += (self.settings.alien_speed * self.settings.fleet_direction)
+        self.rect.y = self.y
