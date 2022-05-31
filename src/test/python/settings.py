@@ -26,8 +26,8 @@ class Settings:
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 3
         #         外星人设置
-        self.alien_speed = 1.0
-        self.fleet_drop_speed = 10
+        self.alien_speed = 0.1
+        self.fleet_drop_speed = 0.1
         #         fleet_direction 为1表示向右移,为-1表示向左移
         self.fleet_direction = 1
 
@@ -55,5 +55,5 @@ class Settings:
         self.ship_speed *= self.speedup_scale
         self.bullet_speed *= self.speedup_scale
         self.alien_speed *= self.speedup_scale
-        self.alien_points = int(self.alien_points * self.score_scale)
+        # self.alien_points = int(self.alien_points * self.score_scale)
         print(self.alien_points)

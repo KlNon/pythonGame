@@ -21,10 +21,10 @@ class Ship(Sprite):
         self.screen_rect = ai_game.screen.get_rect()
 
         #         加载飞船图像并获取起外接矩形.
-        self.image = pygame.image.load('images/ship.bmp')
+        self.image = pygame.image.load('images/shipLeft.bmp')
         self.rect = self.image.get_rect()
 
-        #         对于每艘新飞船,都将其放在屏幕底部的中央.
+        #         对于每艘新飞船,都将其放在屏幕左中位置.
         self.rect.midleft = self.screen_rect.midleft
 
         # 在飞船的属性x中储存小数值
@@ -54,11 +54,13 @@ class Ship(Sprite):
         if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
             self.y += self.settings.ship_speed
         self.rect.x = self.x
+        self.rect.y = self.y
 
     def center_ship(self):
         """让飞船居中"""
         self.rect.midleft = self.screen_rect.midleft
         self.x = float(self.x)
+        self.y = float(self.y)
 
     def blitme(self):
         """在指定位置绘制飞船."""

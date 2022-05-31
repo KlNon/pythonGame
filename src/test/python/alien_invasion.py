@@ -47,7 +47,7 @@ class AlienInvasion:
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
 
-        self._create_fleet()
+        # self._create_fleet()
 
         # 创建Play按钮
         self.play_button = Button(self, "Play")
@@ -61,8 +61,8 @@ class AlienInvasion:
             self._check_events()
             if self.stats.game_active:
                 self.ship.update()
-                # self._update_bullets()
-                # self._update_aliens()
+                self._update_bullets()
+                self._update_aliens()
             self._update_screen()
 
     def _check_events(self):
@@ -138,7 +138,7 @@ class AlienInvasion:
         if not self.aliens:
             # 删除现有的子弹并新建一群外星人
             self.bullets.empty()
-            self._create_fleet()
+            # self._create_fleet()
             self.settings.increase_speed()
 
             # 提高等级
@@ -210,7 +210,7 @@ class AlienInvasion:
             self.bullets.empty()
 
             #         创建一群新的外星人,并将飞船放到屏幕底端的中央
-            self._create_fleet()
+            # self._create_fleet()
             self.ship.center_ship()
 
             #         暂停
@@ -246,7 +246,7 @@ class AlienInvasion:
             self.bullets.empty()
 
             #             创建一群新的外星人,并让飞船居中
-            self._create_fleet()
+            # self._create_fleet()
             self.ship.center_ship()
 
             #             隐藏鼠标光标
