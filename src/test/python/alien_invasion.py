@@ -151,7 +151,7 @@ class AlienInvasion:
                     if self.stats.super_mode:
                         self.stats.kill_count += 1
                         self.sb.prep_kill()
-                    if randint(-10, 10) > 9:
+                    if randint(0, self.settings.star_chanceA) < self.settings.star_chanceB:
                         self._create_star(alien.rect.x, alien.rect.y)
 
                 self.stats.score += self.settings.alien_points * len(aliens)
