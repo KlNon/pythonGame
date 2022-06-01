@@ -19,6 +19,7 @@ from button import Button
 from scoreboard import Scoreboard
 from stars import Stars
 from random import randint
+from pymouse import *
 
 
 class AlienInvasion:
@@ -312,6 +313,8 @@ class AlienInvasion:
 
     def _check_play_button(self, mouse_pos):
         """在玩家单击Play按钮时开始新游戏"""
+        m = PyMouse()
+        print(m.position())
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
             # 重置游戏设置
