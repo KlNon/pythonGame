@@ -30,6 +30,7 @@ class Scoreboard:
         self.prep_high_score()
         self.prep_level()
         self.prep_ships()
+        self.prep_kill()
 
     def prep_score(self):
         """将得分转换为一幅渲染的图像"""
@@ -43,10 +44,11 @@ class Scoreboard:
         self.score_rect.top = 20
 
     def show_score(self):
-        """在屏幕上显示得分"""
+        """在屏幕上显示得分,等级和剩下飞船数"""
         self.screen.blit(self.score_image, self.score_rect)
         self.screen.blit(self.high_score_image, self.high_score_rect)
         self.screen.blit(self.level_image, self.level_rect)
+        self.screen.blit(self.super_image, self.super_rect)
         # 绘制飞船
         self.ships.draw(self.screen)
 
@@ -84,3 +86,25 @@ class Scoreboard:
             ship.rect.x = 10 + ship_number * ship.rect.width
             ship.rect.y = 10
             self.ships.add(ship)
+
+    def prep_kill(self):
+        """重置超级模式击杀数,并且将超级模式转换为渲染的图像"""
+        if self.stats.super_mode:
+            super_str = 'ON'
+        else:
+            super_str = 'OFF'
+        self.super_image = self.font.render(
+            super_str + " : " + str(self.settings.star_kill_number - self.stats.kill_count), True, self.text_color,
+            self.settings.bg_color)
+        self.super_rect = self.super_image.get_rect()
+        self.super_rect.right = self.level_rect.right
+        self.super_rect.top = self.level_rect.bottom + 10
+
+    def check_kill(self):
+        """检查是否达到相应击杀数,取消超级状态"""
+        if self.stats.super_mode and self.stats.kill_count >= self.settings.star_kill_number:
+            self.settings.bullet_height = 3
+            self.stats.kill_count = 0
+            self.stats.super_mode = False
+            self.settings.star_throw_enemy = False
+            self.prep_kill()

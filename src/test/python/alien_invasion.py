@@ -17,6 +17,8 @@ from bullet import Bullet
 from alien import Alien
 from button import Button
 from scoreboard import Scoreboard
+from stars import Stars
+from random import randint
 
 
 class AlienInvasion:
@@ -46,6 +48,7 @@ class AlienInvasion:
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
+        self.stars = pygame.sprite.Group()
 
         self._create_fleet()
 
@@ -57,12 +60,20 @@ class AlienInvasion:
 
     def run_game(self):
         """开始游戏的主循环"""
+        # 读取最高分文件,并渲染其图像
+        with open('score/high_score.txt') as f:  # 默认模式为‘r’，只读模式
+            contents = f.read()  # 读取文件全部内容
+            contents.rstrip()  # rstrip()函数用于删除字符串末的空白
+            self.stats.high_score = int(contents)
+            self.sb.prep_high_score()
+
         while True:
             self._check_events()
             if self.stats.game_active:
                 self.ship.update()
                 self._update_bullets()
                 self._update_aliens()
+                self._update_stars()
             self._update_screen()
 
     def _check_events(self):
@@ -93,6 +104,10 @@ class AlienInvasion:
             self.ship.moving_down = True
         #     按Q退出
         elif event.key == pygame.K_q:
+            # 存储最高分到文件
+            filename = 'score/high_score.txt'
+            with open(filename, 'w') as f:  # 如果filename不存在会自动创建， 'w'表示写数据，写之前会清空文件中的原有数据！
+                f.write(str(self.stats.high_score))
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
@@ -129,12 +144,20 @@ class AlienInvasion:
         """响应子弹和外星人碰撞"""
         #     检查是否有子弹击中了外星人.
         # 如果是,就删除相应的子弹和外星人,第一个True是删除子弹,第二个True是删除外星人
-        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, not self.settings.star_throw_enemy, True)
         if collisions:
             for aliens in collisions.values():
+                for alien in aliens:
+                    if self.stats.super_mode:
+                        self.stats.kill_count += 1
+                        self.sb.prep_kill()
+                    if randint(-10, 10) > 9:
+                        self._create_star(alien.rect.x, alien.rect.y)
+
                 self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
             self.sb.check_high_score()
+            self.sb.check_kill()
         if not self.aliens:
             # 删除现有的子弹并新建一群外星人
             self.bullets.empty()
@@ -194,11 +217,11 @@ class AlienInvasion:
         self.aliens.update()
 
         #     检测外星人和飞船之间的碰撞
-        # if pygame.sprite.spritecollideany(self.ship, self.aliens):
-        #     self._ship_hit()
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            self._ship_hit()
 
         #     检查是否有外星人到达屏幕底端
-        self._check_aliens_bottom()
+        self._check_aliens_left()
 
     def _check_fleet_edges(self):
         """有外星人到达边缘时采取响应的措施"""
@@ -208,7 +231,7 @@ class AlienInvasion:
                 break
 
     def _change_fleet_direction(self):
-        """将正群外星人左移,并改变它们的方向"""
+        """将整群外星人左移,并改变它们的方向"""
         for alien in self.aliens.sprites():
             alien.rect.x -= self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
@@ -223,6 +246,7 @@ class AlienInvasion:
             #         清空余下的外星人和子弹
             self.aliens.empty()
             self.bullets.empty()
+            self.stars.empty()
 
             #         创建一群新的外星人,并将飞船放到屏幕底端的中央
             self._create_fleet()
@@ -234,7 +258,7 @@ class AlienInvasion:
             self.stats.game_active = False
             pygame.mouse.set_visible(True)
 
-    def _check_aliens_bottom(self):
+    def _check_aliens_left(self):
         """检查是否有外星人到达了屏幕左端"""
         screen_rect = self.screen.get_rect()
         for alien in self.aliens.sprites():
@@ -242,6 +266,49 @@ class AlienInvasion:
                 # 像飞船被撞到一样进行处理
                 self._ship_hit()
                 break
+
+    def _create_star(self, star_x, star_y):
+        """创建一个星星"""
+        star = Stars(self)
+        star.rect.x = star_x
+        star.rect.y = star_y
+        star.change_rect(star_x, star_y)
+        self.stars.add(star)
+
+    def _update_stars(self):
+        """更新单个星星的位置,并检查是否有星星到达屏幕边缘"""
+        self._check_stars_edges()
+        self.stars.update()
+
+        #     检测星星和飞船之间的碰撞
+        if pygame.sprite.spritecollide(self.ship, self.stars, True):
+            self.settings.bullet_height = self.settings.star_change_width
+            self.stats.kill_count = 0
+            self.stats.super_mode = True
+            # 子弹穿过敌人
+            self.settings.star_throw_enemy = True
+            # 生命小于5的时候奖励命
+            if self.stats.ships_left < 5:
+                self.stats.ships_left += 1
+            self.sb.prep_ships()
+            self.sb.prep_kill()
+
+        #     检查是否有星星到达屏幕底端
+        self._check_stars_left()
+
+    def _check_stars_left(self):
+        """检查是否有星星到达了屏幕左端,是就删除"""
+        screen_rect = self.screen.get_rect()
+        for star in self.stars.copy():
+            if star.rect.left <= screen_rect.left:
+                self.stars.remove(star)
+
+    def _check_stars_edges(self):
+        """检查星星是否到达屏幕上下,并反弹"""
+        for star in self.stars.sprites():
+            if star.check_edges():
+                # star.rect.x -= self.settings.star_drop_speed
+                star.star_direction *= -1
 
     def _check_play_button(self, mouse_pos):
         """在玩家单击Play按钮时开始新游戏"""
@@ -255,10 +322,13 @@ class AlienInvasion:
             self.sb.prep_score()
             self.sb.prep_level()
             self.sb.prep_ships()
+            # 超级模式重置
+            self.sb.prep_kill()
 
             #             清空外星人列表和子弹列表
             self.aliens.empty()
             self.bullets.empty()
+            self.stars.empty()
 
             #             创建一群新的外星人,并让飞船居中
             self._create_fleet()
@@ -276,6 +346,7 @@ class AlienInvasion:
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
 
+        self.stars.draw(self.screen)
         # 显示得分
         self.sb.show_score()
 

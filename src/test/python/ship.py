@@ -45,7 +45,7 @@ class Ship(Sprite):
     def update(self):
         """根据移动标志调整飞船的位置."""
         # 更新飞船而不是rect对象的值
-        if self.moving_right and self.rect.right < self.screen_rect.right:
+        if self.moving_right and self.rect.right < 200:
             self.x += self.settings.ship_speed
         if self.moving_left and self.rect.left > 0:
             self.x -= self.settings.ship_speed
@@ -59,8 +59,8 @@ class Ship(Sprite):
     def center_ship(self):
         """让飞船居中"""
         self.rect.midleft = self.screen_rect.midleft
-        self.x = float(self.x)
-        self.y = float(self.y)
+        self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
 
     def blitme(self):
         """在指定位置绘制飞船."""

@@ -26,3 +26,5 @@ class GameStats:
         self.ships_left = self.settings.ship_limit
         self.score = 0
         self.level = 1
+        self.kill_count = 0
+        self.super_mode = False
