@@ -23,4 +23,6 @@ class Test:
 
 
 if __name__ == "__main__":
-    test = Test()
+    keyboard = PyKeyboard()
+    keyboard.press_key('Q')
+    keyboard.release_key('Q')

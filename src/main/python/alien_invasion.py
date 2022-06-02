@@ -53,6 +53,9 @@ class AlienInvasion:
 
         self._create_fleet()
 
+        # 用于单元测试退出游戏
+        self.quit_game_flag = False
+
         # 创建Play按钮
         self.play_button = Button(self, "Play")
 
@@ -68,13 +71,13 @@ class AlienInvasion:
             self.stats.high_score = int(contents)
             self.sb.prep_high_score()
 
-        while True:
+        while not self.quit_game_flag:
             self._check_events()
             if self.stats.game_active:
                 self.ship.update()
                 self._update_bullets()
                 self._update_aliens()
-                self._update_stars()
+                self._update_stars(False)
             self._update_screen()
 
     def _check_events(self):
@@ -276,13 +279,13 @@ class AlienInvasion:
         star.change_rect(star_x, star_y)
         self.stars.add(star)
 
-    def _update_stars(self):
-        """更新单个星星的位置,并检查是否有星星到达屏幕边缘"""
+    def _update_stars(self, test_super_mode=False):
+        """更新单个星星的位置,并检查是否有星星到达屏幕边缘,test_super_mode是测试超级模式"""
         self._check_stars_edges()
         self.stars.update()
 
         #     检测星星和飞船之间的碰撞
-        if pygame.sprite.spritecollide(self.ship, self.stars, True):
+        if pygame.sprite.spritecollide(self.ship, self.stars, True) or test_super_mode:
             self.settings.bullet_height = self.settings.star_change_width
             self.stats.kill_count = 0
             self.stats.super_mode = True
@@ -311,12 +314,11 @@ class AlienInvasion:
                 # star.rect.x -= self.settings.star_drop_speed
                 star.star_direction *= -1
 
-    def _check_play_button(self, mouse_pos):
+    def _check_play_button(self, mouse_pos, button_clicked=False):
         """在玩家单击Play按钮时开始新游戏"""
-        m = PyMouse()
-        print(m.position())
-        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
-        if button_clicked and not self.stats.game_active:
+        if not button_clicked:
+            button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked or not self.stats.game_active:
             # 重置游戏设置
             self.settings.initialize_dynamic_settings()
             # 重置游戏统计信息
