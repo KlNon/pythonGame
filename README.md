@@ -1,0 +1,3 @@
+# pythonGame
+一个简单的Python小游戏
+本项目是用于python课程的一个小项目，主要是用于学习python的一些基础知识以及pygam的使用方法
