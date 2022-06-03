@@ -1,16 +1,17 @@
 import threading
 import unittest
 from unittest.mock import Mock
-
+from unittest.mock import patch
 import pygame
 
+import src.main.python.alien_invasion
 from alien_invasion import AlienInvasion
 import time
 
 
 class MyTestCase(unittest.TestCase):
 
-    def test_UP(self):
+    def UP(self):
         # 判断是否按下"上"键
         event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_UP)
         self.mock_obj._check_keydown_events(event)
@@ -26,7 +27,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.mock_obj.ship.moving_up, False)
         print("上移测试通过")
 
-    def test_DOWN(self):
+    def DOWN(self):
         # 判断是否按下"下"键
         event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_DOWN)
         self.mock_obj._check_keydown_events(event)
@@ -42,7 +43,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.mock_obj.ship.moving_down, False)
         print("下移测试通过")
 
-    def test_RIGHT(self):
+    def RIGHT(self):
         # 判断是否按下"右"键
         event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RIGHT)
         self.mock_obj._check_keydown_events(event)
@@ -58,7 +59,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.mock_obj.ship.moving_right, False)
         print("右移测试通过")
 
-    def test_LEFT(self):
+    def LEFT(self):
         # 判断是否按下"左"键
         event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_LEFT)
         self.mock_obj._check_keydown_events(event)
@@ -74,8 +75,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.mock_obj.ship.moving_left, False)
         print("左移测试通过")
 
-    def test_Space(self):
-        # 连续按3次宫格
+    def Space(self):
+        # 连续按3次空格
         for bullet_num in range(1, 4):
             event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
             self.mock_obj._check_keydown_events(event)
@@ -87,14 +88,15 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(len(self.mock_obj.bullets), bullet_num)
         print("子弹测试通过")
 
-    def test_ship_hit(self):
+    def ship_hit(self):
         # 模拟飞船被击中
         self.mock_obj._ship_hit()
         # 被击中一次,生命值减1
         self.assertEqual(self.mock_obj.stats.ships_left, 2)
         print("生命值减少测试通过")
+        time.sleep(3)
 
-    def test_super_mdoe(self):
+    def super_mdoe(self):
         # 超级模式测试开启
         self.mock_obj._update_stars(True)
         # 检测超级模式标识是否正确
@@ -107,30 +109,49 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.mock_obj.settings.star_throw_enemy, True)
         print("超级模式测试通过")
 
-    def test(self):
-        self.mock_obj = AlienInvasion()
-        mock_game = Mock(return_value=self.mock_obj)
+    def quit(self):
+        # 模拟按下"Q"键
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_q)
+        self.mock_obj._check_keydown_events(event)
+        self.assertEqual(self.mock_obj.quit_game_flag, True)
+        event = pygame.event.Event(pygame.KEYUP, key=pygame.K_q)
+        print("退出游戏测试通过")
+
+    def click_play(self):
+        # 模拟按下play
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {'button': 1, 'pos': (613, 395)})
+        mouse_pos = pygame.mouse.get_pos()
+        self.mock_obj._check_play_button(mouse_pos)
+        self.assertEqual(self.mock_obj.stats.game_active, True)
+        print("开始游戏测试通过")
+
+    @patch("src.main.python.alien_invasion.AlienInvasion")
+    def test(self, mock_game):
+        mock_game.return_value = AlienInvasion()
         self.mock_obj = mock_game()
 
         try:
             t = threading.Thread(target=self.mock_obj.run_game)
             t.start()
-            # 开始游戏
-            self.mock_obj._check_play_button(None, True)
+            # 开始游戏测试
+            self.click_play()
+            # self.mock_obj._check_play_button(None, True)
             # 上移测试
-            self.test_UP()
+            self.UP()
             # 下移测试
-            self.test_DOWN()
+            self.DOWN()
             # 右移测试
-            self.test_RIGHT()
+            self.RIGHT()
             # 左移测试
-            self.test_LEFT()
+            self.LEFT()
             # 子弹测试
-            self.test_Space()
+            self.Space()
             # 生命值减少测试
-            self.test_ship_hit()
+            self.ship_hit()
             # 超级模式测试
-            self.test_super_mdoe()
+            self.super_mdoe()
+            # 退出游戏测试
+            self.quit()
         except Exception as e:
             print(e)
         finally:

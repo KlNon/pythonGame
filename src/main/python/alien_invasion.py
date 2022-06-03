@@ -6,6 +6,7 @@
 @Date    ：2022/4/28 15:15 
 """
 import sys
+import time
 from time import sleep
 
 import pygame
@@ -112,7 +113,8 @@ class AlienInvasion:
             filename = 'score/high_score.txt'
             with open(filename, 'w') as f:  # 如果filename不存在会自动创建， 'w'表示写数据，写之前会清空文件中的原有数据！
                 f.write(str(self.stats.high_score))
-            sys.exit()
+            self.quit_game_flag = True
+            time.sleep(1)
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
 
